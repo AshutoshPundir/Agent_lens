@@ -23,3 +23,35 @@ export const getCarbonAnalytics = async () => {
 
   return response.data;
 };
+
+export const getSpendAnalytics = async (
+  payload
+) => {
+
+  const response = await api.post(
+    "/api/analytics/spend",
+    payload
+  );
+
+  return response.data;
+};
+
+export const getOptimizationInsights =
+  async () => {
+
+    const response = await api.get(
+      "/api/analytics/optimization"
+    );
+
+    return response.data;
+};
+
+export const getTeamAnalytics =
+  async (teamName) => {
+
+    const response = await api.get(
+      `/api/analytics/team/${teamName}`
+    );
+
+    return response.data;
+};
