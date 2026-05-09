@@ -1,8 +1,56 @@
 import { ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { toolLinks } from "../../utils/toolLinks";
 
 export default function WorkflowVisualizer({ workflow }) {
   if (!workflow || workflow.length === 0) return null;
+
+
+  const handleLaunch = async (
+  tool,
+  prompt
+) => {
+
+  try {
+
+    // Copy Prompt
+    await navigator.clipboard.writeText(
+      prompt
+    );
+
+
+
+    // Open Tool Website
+    const link = toolLinks[tool];
+
+if (!link) {
+
+  alert(
+    "Tool link not available"
+  );
+
+  return;
+
+}
+
+window.open(link, "_blank");
+
+
+
+    // Optional Alert
+    alert(
+      "Prompt copied to clipboard!"
+    );
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+
+
 
   return (
     <div className="flex flex-col gap-2">
@@ -54,6 +102,20 @@ export default function WorkflowVisualizer({ workflow }) {
 
                 <p style={{ color: "#64748b", fontSize: "0.8rem", marginTop: 6 }}>
                   {step.purpose}
+
+                  <button
+                    onClick={() =>
+                    handleLaunch(
+                    step.tool,
+                    step.purpose
+                    )
+                }
+                className="mt-4 bg-emerald-500 hover:bg-emerald-600 transition px-4 py-2 rounded-xl text-white text-sm"
+            >
+
+                        Launch Tool
+
+            </button>
                 </p>
               </div>
 
