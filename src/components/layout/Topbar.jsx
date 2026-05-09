@@ -1,47 +1,37 @@
-import { Bell, Search, UserCircle2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const pageTitles = {
+  "/dashboard": { title: "Command Center", subtitle: "AI ecosystem overview" },
+  "/dashboard/tools": { title: "Tool Registry", subtitle: "Browse and compare AI tools" },
+  "/dashboard/recommend": { title: "Neural Engine", subtitle: "AI-powered recommendations" },
+  "/dashboard/analytics/spend": { title: "Spend Analysis", subtitle: "Subscription cost intelligence" },
+  "/dashboard/analytics/optimization": { title: "Optimization Core", subtitle: "Efficiency analysis engine" },
+  "/dashboard/governance": { title: "Governance Protocol", subtitle: "Policy validation system" },
+  "/dashboard/organization": { title: "Org Configuration", subtitle: "Enterprise AI setup" },
+};
+
+function getPageInfo(pathname) {
+  if (pathname.startsWith("/dashboard/analytics/team")) return { title: "Team Telemetry", subtitle: "Workflow and spend analytics" };
+  return pageTitles[pathname] || { title: "Command Center", subtitle: "AgentLens HQ" };
+}
 
 export default function Topbar() {
+  const location = useLocation();
+  const pageInfo = getPageInfo(location.pathname);
+
   return (
-    <header className="h-[80px] border-b border-white/10 bg-[#0F172A] px-8 flex items-center justify-between">
-      
-      {/* Left Side */}
+    <header className="flex items-center relative energy-border"
+      style={{ height: "var(--topbar-height)", padding: "0 32px", background: "rgba(10,14,26,0.5)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,234,255,0.04)", zIndex: 5 }}>
       <div>
-        <h1 className="text-2xl font-bold text-white">
-          Dashboard
-        </h1>
-
-        <p className="text-sm text-gray-400 mt-1">
-          Welcome back to AlgoLens
-        </p>
-      </div>
-
-      {/* Right Side */}
-      <div className="flex items-center gap-4">
-        
-        {/* Search */}
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-          
-          <Search size={18} className="text-gray-400" />
-
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent outline-none text-sm text-white placeholder:text-gray-500"
-          />
-        </div>
-
-        {/* Notification */}
-        <button className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:bg-white/10 transition">
-          
-          <Bell size={20} />
-        </button>
-
-        {/* Profile */}
-        <button className="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
-          
-          <UserCircle2 size={22} />
-        </button>
-
+        <motion.h1 key={pageInfo.title} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          style={{ fontFamily: "'Space Grotesk'", fontSize: "1.15rem", fontWeight: 600, color: "#e2e8f0", letterSpacing: "-0.01em" }}>
+          {pageInfo.title}
+        </motion.h1>
+        <motion.p key={pageInfo.subtitle} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.1 }}
+          style={{ fontSize: "0.72rem", color: "#2a3a4c", marginTop: 2, letterSpacing: "0.04em", textTransform: "uppercase", fontWeight: 500 }}>
+          {pageInfo.subtitle}
+        </motion.p>
       </div>
     </header>
   );

@@ -3,12 +3,17 @@ import {
   ShieldCheck,
   TrendingUp,
   AlertTriangle,
+  Leaf,
+  Droplets,
+  TreePine,
+  Gauge,
 } from "lucide-react";
 
 import SectionTitle from "../components/shared/SectionTitle";
 import StatCard from "../components/shared/StatCard";
-import AIBadge from "../components/shared/AIBadge";
+
 import ToolUsageChart from "../components/charts/ToolUsageChart";
+import { motion } from "framer-motion";
 
 import { useEffect, useState } from "react";
 import {
@@ -19,294 +24,278 @@ import {
 import LoadingSpinner from "../components/shared/LoadingSpinner";
 import ErrorMessage from "../components/shared/ErrorMessage";
 import EmptyState from "../components/shared/EmptyState";
+import GlassCard from "../components/ui/GlassCard";
 
 export default function Dashboard() {
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [usageData, setUsageData] = useState([]);
+  const [carbonData, setCarbonData] = useState(null);
 
-    const [analytics, setAnalytics] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [usageData, setUsageData] = useState([]);
-    const [carbonData, setCarbonData] = useState(null);
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const data = await getExecutiveAnalytics();
+        setAnalytics(data.data);
 
-    
-    useEffect(() => {
-        
-        const fetchAnalytics = async () => {
-            
-            try {
-                
-                const data = await getExecutiveAnalytics();
-                setAnalytics(data.data);
-                
-                const usage = await getUsageAnalytics();
+        const usage = await getUsageAnalytics();
         setUsageData(usage.data);
 
-                const carbon = await getCarbonAnalytics();
-
-setCarbonData(carbon.data);
-        
-        } catch (err) {
-            
-            setError("Failed to fetch analytics");
-
-        } finally {
-
-            setLoading(false);
-
-        }
-        
+        const carbon = await getCarbonAnalytics();
+        setCarbonData(carbon.data);
+      } catch (err) {
+        setError("Failed to fetch analytics");
+      } finally {
+        setLoading(false);
+      }
     };
-    
+
     fetchAnalytics();
-    
-}, []);
+  }, []);
 
-// STEP 5 → LOADING STATE
-if (loading) {
-    return <LoadingSpinner />;
-}
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
 
-// STEP 6 → ERROR STATE
-if (error) {
-    return <ErrorMessage message={error} />;
-}
-
-    const toolUsageMap = {};
-
+  // Build chart data
+  const toolUsageMap = {};
   usageData.forEach((workflow) => {
-
-  workflow.toolsUsed.forEach((tool) => {
-
-    toolUsageMap[tool] =
-      (toolUsageMap[tool] || 0) + 1;
-
+    workflow.toolsUsed.forEach((tool) => {
+      toolUsageMap[tool] = (toolUsageMap[tool] || 0) + 1;
+    });
   });
-
-});
-
-const chartData = Object.entries(
-  toolUsageMap
-).map(([name, value]) => ({
-  name,
-  value,
-}));
+  const chartData = Object.entries(toolUsageMap).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
   return (
-    <div>
-
+    <div className="flex flex-col gap-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        
+      <div className="flex items-center justify-between">
         <SectionTitle
           title="Executive Overview"
           subtitle="Monitor AI usage, spend, and optimization insights"
         />
-
-        <AIBadge />
-
       </div>
 
       {/* Stats Row */}
-      {/* Stats Row */}
-      <StatCard
-  title="Health Score"
-  value={`${analytics?.healthScore || 0}%`}
-  subtitle="AI ecosystem efficiency"
-  icon={<ShieldCheck />}
-/>
-
-<StatCard
-  title="Monthly Spend"
-  value={`$${analytics?.totalAISpend || 0}`}
-  subtitle="Across all AI tools"
-  icon={<DollarSign />}
-/>
-
-<StatCard
-  title="Estimated Savings"
-  value={`$${analytics?.estimatedSavings || 0}`}
-  subtitle="Optimization opportunities"
-  icon={<TrendingUp />}
-/>
-
-<StatCard
-  title="Risk Alerts"
-  value={analytics?.risks?.length || 0}
-  subtitle="Potential issues detected"
-  icon={<AlertTriangle />}
-/>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard
+          title="Health Score"
+          value={`${analytics?.healthScore || 0}%`}
+          subtitle="AI ecosystem efficiency"
+          icon={<ShieldCheck size={18} />}
+          glowColor="cyan"
+          delay={0}
+        />
+        <StatCard
+          title="Monthly Spend"
+          value={`$${analytics?.totalAISpend || 0}`}
+          subtitle="Across all AI tools"
+          icon={<DollarSign size={18} />}
+          glowColor="violet"
+          delay={0.05}
+        />
+        <StatCard
+          title="Estimated Savings"
+          value={`$${analytics?.estimatedSavings || 0}`}
+          subtitle="Optimization opportunities"
+          icon={<TrendingUp size={18} />}
+          glowColor="emerald"
+          delay={0.1}
+        />
+        <StatCard
+          title="Risk Alerts"
+          value={analytics?.risks?.length || 0}
+          subtitle="Potential issues detected"
+          icon={<AlertTriangle size={18} />}
+          glowColor="amber"
+          delay={0.15}
+        />
+      </div>
 
       {/* Charts Section */}
-<div className="grid grid-cols-2 gap-6 mt-8">
-
-  <div className="bg-[#0F172A] border border-white/10 rounded-2xl p-6">
-    
-    <h3 className="text-white text-lg font-semibold mb-4">
-      Tool Usage
-    </h3>
-
-    <div className="h-[300px] flex items-center justify-center text-gray-400">
-    <ToolUsageChart data={chartData} />    </div>
-
-  </div>
-
-  <div className="bg-[#0F172A] border border-white/10 rounded-2xl p-6">
-    
-    <h3 className="text-white text-lg font-semibold mb-4">
-      AI Recommendations
-    </h3>
-
-    <div className="space-y-4">
-      
-      {analytics?.recommendations?.map((item, index) => (
-
-  <div
-    key={index}
-    className="bg-white/5 rounded-xl p-4"
-  >
-
-    <p className="text-white text-sm">
-      {item}
-    </p>
-
-  </div>
-
-))}
-
-    </div>
-
-  </div>
-
-</div>
-
-
-{/* Workflow Table */}
-<div className="bg-[#0F172A] border border-white/10 rounded-2xl p-6 mt-8">
-
-  <div className="flex items-center justify-between mb-6">
-    
-    <h3 className="text-white text-lg font-semibold">
-      Recent Workflows
-    </h3>
-
-    <button className="text-emerald-400 text-sm">
-      View All
-    </button>
-
-  </div>
-
-{usageData.length === 0 ? (
-
-  <EmptyState
-    title="No Workflow Data"
-    description="No workflow executions found yet."
-  />
-
-) : (
-
-  <div className="overflow-x-auto">
-
-    <table className="w-full">
-
-      <thead>
-        <tr className="text-left text-gray-400 border-b border-white/10">
-
-          <th className="pb-4">Task</th>
-          <th className="pb-4">Tools</th>
-          <th className="pb-4">Cost</th>
-          <th className="pb-4">Date</th>
-
-        </tr>
-      </thead>
-
-      <tbody>
-
-        {usageData.map((workflow, index) => (
-
-          <tr
-            key={index}
-            className="border-b border-white/5 text-white"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GlassCard delay={0.2} glowColor="cyan">
+          <h3
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "1rem",
+              fontWeight: 600,
+              color: "#e2e8f0",
+              marginBottom: 16,
+            }}
           >
+            Tool Usage Distribution
+          </h3>
+          <ToolUsageChart data={chartData} />
+        </GlassCard>
 
-            <td className="py-4">
-              {workflow.task}
-            </td>
+        <GlassCard delay={0.25} glowColor="violet">
+          <h3
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "1rem",
+              fontWeight: 600,
+              color: "#e2e8f0",
+              marginBottom: 16,
+            }}
+          >
+            AI Recommendations
+          </h3>
+          <div className="flex flex-col gap-3">
+            {analytics?.recommendations?.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  borderRadius: 12,
+                  padding: "12px 16px",
+                }}
+              >
+                <p style={{ color: "#cbd5e1", fontSize: "0.82rem", lineHeight: 1.5 }}>
+                  {item}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
 
-            <td className="py-4">
-              {workflow.toolsUsed.join(", ")}
-            </td>
+      {/* Workflow Table */}
+      <GlassCard delay={0.3}>
+        <div className="flex items-center justify-between mb-6">
+          <h3
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "1rem",
+              fontWeight: 600,
+              color: "#e2e8f0",
+            }}
+          >
+            Recent Workflows
+          </h3>
+          <button
+            style={{
+              fontSize: "0.78rem",
+              color: "#06b6d4",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 500,
+            }}
+          >
+            View All
+          </button>
+        </div>
 
-            <td className="py-4">
-              ${workflow.estimatedCost}
-            </td>
+        {usageData.length === 0 ? (
+          <EmptyState
+            title="No Workflow Data"
+            description="No workflow executions found yet."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="premium-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Tools</th>
+                  <th>Cost</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usageData.map((workflow, index) => (
+                  <motion.tr
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.35 + index * 0.03 }}
+                  >
+                    <td>{workflow.task}</td>
+                    <td>
+                      <div className="flex flex-wrap gap-1.5">
+                        {workflow.toolsUsed.map((t, i) => (
+                          <span
+                            key={i}
+                            style={{
+                              fontSize: "0.7rem",
+                              background: "rgba(6,182,212,0.08)",
+                              border: "1px solid rgba(6,182,212,0.12)",
+                              color: "#06b6d4",
+                              padding: "2px 8px",
+                              borderRadius: 6,
+                            }}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ color: "#10b981", fontWeight: 500 }}>
+                      ${workflow.estimatedCost}
+                    </td>
+                    <td>
+                      {new Date(workflow.createdAt).toLocaleDateString()}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </GlassCard>
 
-            <td className="py-4">
-              {new Date(
-                workflow.createdAt
-              ).toLocaleDateString()}
-            </td>
+      {/* Sustainability Insights */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <SectionTitle
+            title="Sustainability Insights"
+            subtitle="Track environmental impact of AI usage"
+          />
+        </div>
 
-          </tr>
-
-        ))}
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-)}
-
-  
-
-</div>
-
-{/* Sustainability Insights */}
-
-<div className="mt-8">
-
-  <div className="flex items-center justify-between mb-6">
-
-    <SectionTitle
-      title="Sustainability Insights"
-      subtitle="Track environmental impact of AI usage"
-    />
-
-    <AIBadge />
-
-  </div>
-
-  <div className="grid grid-cols-4 gap-6">
-
-    <StatCard
-      title="Carbon Emitted"
-      value={`${carbonData?.totalCarbonGrams || 0}g`}
-      subtitle="Total CO₂ generated"
-    />
-
-    <StatCard
-      title="Water Consumed"
-      value={`${carbonData?.totalWaterConsumedMl || 0}ml`}
-      subtitle="Cooling water usage"
-    />
-
-    <StatCard
-      title="Trees Needed"
-      value={carbonData?.treesNeeded || 0}
-      subtitle="To offset emissions"
-    />
-
-    <StatCard
-      title="Impact Level"
-      value={carbonData?.impactLevel || "Low"}
-      subtitle="Environmental severity"
-    />
-
-  </div>
-
-</div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard
+            title="Carbon Emitted"
+            value={`${carbonData?.totalCarbonGrams || 0}g`}
+            subtitle="Total CO₂ generated"
+            icon={<Leaf size={18} />}
+            glowColor="emerald"
+            delay={0.4}
+          />
+          <StatCard
+            title="Water Consumed"
+            value={`${carbonData?.totalWaterConsumedMl || 0}ml`}
+            subtitle="Cooling water usage"
+            icon={<Droplets size={18} />}
+            glowColor="cyan"
+            delay={0.45}
+          />
+          <StatCard
+            title="Trees Needed"
+            value={carbonData?.treesNeeded || 0}
+            subtitle="To offset emissions"
+            icon={<TreePine size={18} />}
+            glowColor="emerald"
+            delay={0.5}
+          />
+          <StatCard
+            title="Impact Level"
+            value={carbonData?.impactLevel || "Low"}
+            subtitle="Environmental severity"
+            icon={<Gauge size={18} />}
+            glowColor="amber"
+            delay={0.55}
+          />
+        </div>
+      </div>
     </div>
   );
 }

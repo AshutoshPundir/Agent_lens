@@ -1,271 +1,222 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 import SectionTitle from "../components/shared/SectionTitle";
-import AIBadge from "../components/shared/AIBadge";
+
 import LoadingSpinner from "../components/shared/LoadingSpinner";
 import ErrorMessage from "../components/shared/ErrorMessage";
+import GlassCard from "../components/ui/GlassCard";
+import GlowButton from "../components/ui/GlowButton";
+import AnimatedCounter from "../components/ui/AnimatedCounter";
 
 import { generateRecommendation } from "../services/recommendationService";
 import WorkflowVisualizer from "../components/recommend/WorkflowVisualizer";
 import OptimalToolCard from "../components/recommend/OptimalToolCard";
 
 export default function Recommend() {
-
   const [task, setTask] = useState("");
-
   const [budget, setBudget] = useState("medium");
-
-  const [priority, setPriority] =
-    useState("quality");
-
-  const [loading, setLoading] =
-    useState(false);
-
+  const [priority, setPriority] = useState("quality");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const [recommendation, setRecommendation] =
-    useState(null);
-
-
+  const [recommendation, setRecommendation] = useState(null);
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-
     setLoading(true);
-
     setError("");
-
     try {
-
-      const payload = {
-        task,
-        budget,
-        priority,
-      };
-
-      const response =
-        await generateRecommendation(
-          payload
-        );
-
+      const payload = { task, budget, priority };
+      const response = await generateRecommendation(payload);
       setRecommendation(response.data);
-
     } catch (err) {
-
-      setError(
-        "Failed to generate recommendation"
-      );
-
+      setError("Failed to generate recommendation");
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-
-
   return (
-    <div>
-
+    <div className="flex flex-col gap-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-
+      <div className="flex items-center justify-between">
         <SectionTitle
           title="AI Recommendation Engine"
           subtitle="Generate optimized AI workflows"
         />
-
-        <AIBadge />
-
       </div>
 
-
-
       {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-[#0F172A] border border-white/10 rounded-2xl p-6"
-      >
-
-        {/* Task */}
-        <div className="mb-6">
-
-          <label className="block text-white mb-2">
-            Task
-          </label>
-
-          <textarea
-            value={task}
-            onChange={(e) =>
-              setTask(e.target.value)
-            }
-            placeholder="Describe your task..."
-            className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-white outline-none"
-          />
-
-        </div>
-
-
-
-        {/* Dropdowns */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
-
-          {/* Budget */}
+      <GlassCard delay={0.1} glowColor="violet">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          {/* Task */}
           <div>
-
-            <label className="block text-white mb-2">
-              Budget
-            </label>
-
-            <select
-              value={budget}
-              onChange={(e) =>
-                setBudget(e.target.value)
-              }
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white"
+            <label
+              style={{
+                display: "block",
+                fontSize: "0.78rem",
+                fontWeight: 500,
+                color: "#94a3b8",
+                marginBottom: 8,
+              }}
             >
-
-              <option value="low">
-                Low
-              </option>
-
-              <option value="medium">
-                Medium
-              </option>
-
-              <option value="high">
-                High
-              </option>
-
-            </select>
-
+              Task Description
+            </label>
+            <textarea
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              placeholder="Describe your task..."
+              className="premium-textarea"
+            />
           </div>
 
+          {/* Dropdowns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.78rem",
+                  fontWeight: 500,
+                  color: "#94a3b8",
+                  marginBottom: 8,
+                }}
+              >
+                Budget
+              </label>
+              <select
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="premium-select"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
 
-
-          {/* Priority */}
-          <div>
-
-            <label className="block text-white mb-2">
-              Priority
-            </label>
-
-            <select
-              value={priority}
-              onChange={(e) =>
-                setPriority(e.target.value)
-              }
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white"
-            >
-
-              <option value="speed">
-                Speed
-              </option>
-
-              <option value="quality">
-                Quality
-              </option>
-
-              <option value="cost">
-                Cost
-              </option>
-
-            </select>
-
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.78rem",
+                  fontWeight: 500,
+                  color: "#94a3b8",
+                  marginBottom: 8,
+                }}
+              >
+                Priority
+              </label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="premium-select"
+              >
+                <option value="speed">Speed</option>
+                <option value="quality">Quality</option>
+                <option value="cost">Cost</option>
+              </select>
+            </div>
           </div>
 
-        </div>
-
-
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="bg-emerald-500 hover:bg-emerald-600 transition px-6 py-3 rounded-xl text-white font-medium"
-        >
-
-          Generate Recommendation
-
-        </button>
-
-      </form>
-
-
+          {/* Submit */}
+          <div>
+            <GlowButton type="submit" variant="primary">
+              Generate Recommendation
+            </GlowButton>
+          </div>
+        </form>
+      </GlassCard>
 
       {/* Loading */}
       {loading && <LoadingSpinner />}
 
-
-
       {/* Error */}
-      {error && (
-        <div className="mt-6">
-          <ErrorMessage message={error} />
-        </div>
-      )}
-
-
+      {error && <ErrorMessage message={error} />}
 
       {/* Recommendation Result */}
       {recommendation && (
-
-        <div className="mt-8 bg-[#0F172A] border border-white/10 rounded-2xl p-6">
-
-          <h2 className="text-2xl font-bold text-white mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col gap-6"
+        >
+          <h2
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "1.3rem",
+              fontWeight: 700,
+              color: "#f1f5f9",
+              letterSpacing: "-0.02em",
+            }}
+          >
             Recommended Workflow
           </h2>
 
-          <OptimalToolCard
-            tool={recommendation.allScores?.[0]}
-        />
+          <OptimalToolCard tool={recommendation.allScores?.[0]} />
 
           {/* Workflow Steps */}
-          <div className="space-y-4">
-
-            <WorkflowVisualizer
-                workflow={recommendation.orchestrationFlow}
-            />
-
-          </div>
-
-
+          <WorkflowVisualizer workflow={recommendation.orchestrationFlow} />
 
           {/* Cost */}
-          <div className="mt-8">
-
-            <h3 className="text-white text-xl font-semibold mb-2">
+          <GlassCard delay={0} glowColor="emerald">
+            <p
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 500,
+                color: "#64748b",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}
+            >
               Estimated Cost
-            </h3>
-
-            <p className="text-emerald-400 text-3xl font-bold">
-              $
-              {recommendation.estimatedCostUSD}
             </p>
-
-          </div>
-
-
+            <p
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: "2rem",
+                fontWeight: 700,
+                background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              <AnimatedCounter
+                value={recommendation.estimatedCostUSD}
+                prefix="$"
+                decimals={2}
+              />
+            </p>
+          </GlassCard>
 
           {/* Reasoning */}
-          <div className="mt-8">
-
-            <h3 className="text-white text-xl font-semibold mb-2">
+          <GlassCard delay={0} glowColor="violet">
+            <p
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 500,
+                color: "#64748b",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
               AI Reasoning
-            </h3>
-
-            <p className="text-gray-300 leading-relaxed">
+            </p>
+            <p
+              style={{
+                color: "#94a3b8",
+                fontSize: "0.88rem",
+                lineHeight: 1.7,
+              }}
+            >
               {recommendation.reasoning}
             </p>
-
-          </div>
-
-        </div>
-
+          </GlassCard>
+        </motion.div>
       )}
-
     </div>
   );
 }
